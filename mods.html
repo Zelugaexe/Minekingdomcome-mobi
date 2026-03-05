@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MineKingdom - 我们使用的模组</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#52A552',
+                        secondary: '#FF6B00',
+                        dark: '#1A1A1A',
+                        light: '#F5F5F5',
+                        accent: '#FFD700'
+                    },
+                    fontFamily: {
+                        minecraft: ['Minecraft', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+            .bg-glass {
+                background: rgba(255,255,255,0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+        }
+    </style>
+
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('fonts/Minecraft.ttf') format('truetype');
+            font-display: swap;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Minecraft', sans-serif;
+            background-color: #121212;
+            color: #F5F5F5;
+            overflow-x: hidden;
+        }
+
+        /* 导航 */
+        .navbar {
+            transition: all 0.3s ease;
+            padding: 10px 15px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+        }
+        .navbar.scrolled {
+            background: rgba(26,26,26,0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 移动端菜单 */
+        .navbar-menu {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 85%; height: 100vh;
+            background: #1A1A1A;
+            z-index: 10000;
+            transition: right 0.3s ease;
+            padding: 70px 20px 20px;
+            overflow-y: auto;
+        }
+        .navbar-menu.active { right: 0; }
+        .overlay {
+            position: fixed; top:0; left:0;
+            width:100%; height:100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        /* 回到顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 25px; right: 20px;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: #52A552;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.3s;
+            z-index: 9998;
+        }
+        .back-to-top.visible { opacity:1; }
+
+        /* 模组页面 */
+        .page-container {
+            padding: 100px 15px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .mod-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .mod-card {
+            background: #1A1A1A;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: 0.3s;
+        }
+        .mod-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+        .mod-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        .mod-body {
+            padding: 18px;
+        }
+        .mod-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 8px;
+        }
+        .mod-desc {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .mod-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #222;
+            color: #ccc;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        footer {
+            background: #111;
+            padding: 40px 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- 导航 -->
+<nav class="navbar">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="index.html" class="flex items-center">
+            <img src="assets/images/server-icon.png" class="h-8 w-8 mr-2">
+            <span class="text-white font-bold text-shadow">MINEKINGDOM</span>
+        </a>
+
+        <div class="hidden md:flex space-x-6">
+            <a href="index.html" class="text-white hover:text-primary">主页</a>
+            <a href="about.html" class="text-white hover:text-primary">关于我们</a>
+            <a href="news.html" class="text-white hover:text-primary">新闻</a>
+            <a href="events.html" class="text-white hover:text-primary">活动</a>
+            <a href="donate.html" class="text-white hover:text-primary">赞助</a>
+            <a href="feedback.html" class="text-white hover:text-primary">反馈</a>
+            <a href="mods.html" class="text-primary font-bold">模组</a>
+            <a href="admins.html" class="text-white hover:text-primary">管理员</a>
+        </div>
+
+        <div class="md:hidden">
+            <button id="menu-toggle" class="text-white">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="navbar-menu" class="navbar-menu md:hidden">
+        <div class="flex justify-end mb-6">
+            <button id="close-menu" class="text-white">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+            <a href="index.html" class="text-white py-2 border-b border-gray-700">主页</a>
+            <a href="about.html" class="text-white py-2 border-b border-gray-700">关于我们</a>
+            <a href="news.html" class="text-white py-2 border-b border-gray-700">新闻</a>
+            <a href="events.html" class="text-white py-2 border-b border-gray-700">活动</a>
+            <a href="donate.html" class="text-white py-2 border-b border-gray-700">赞助</a>
+            <a href="feedback.html" class="text-white py-2 border-b border-gray-700">反馈</a>
+            <a href="mods.html" class="text-primary py-2 border-b border-gray-700">模组</a>
+            <a href="admins.html" class="text-white py-2 border-b border-gray-700">管理员</a>
+        </div>
+    </div>
+    <div id="overlay" class="overlay"></div>
+</nav>
+
+<!-- 内容 -->
+<div class="page-container">
+    <h1 class="text-3xl font-bold text-center mb-3" data-aos="fade-up">我们使用的模组</h1>
+    <p class="text-gray-400 text-center mb-10 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+        服务器搭载丰富模组，带来更多玩法、道具、世界生成与冒险体验。
+    </p>
+
+    <div class="mod-grid">
+        <!-- 模组卡片 1 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod1/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">JourneyMap</h3>
+                <p class="mod-desc">游戏内迷你地图与全屏地图，支持坐标、传送、死亡点记录。</p>
+                <div>
+                    <span class="mod-tag">地图</span>
+                    <span class="mod-tag">客户端</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模组卡片 2 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod2/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">Applied Energistics 2</h3>
+                <p class="mod-desc">强大的物资存储与自动化系统，支持无限物品网络管理。</p>
+                <div>
+                    <span class="mod-tag">科技</span>
+                    <span class="mod-tag">存储</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模组卡片 3 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod3/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">Botania</h3>
+                <p class="mod-desc">自然魔法模组，通过花朵收集魔力，制作装备与仪式。</p>
+                <div>
+                    <span class="mod-tag">魔法</span>
+                    <span class="mod-tag">自然</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模组卡片 4 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod4/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">Create</h3>
+                <p class="mod-desc">齿轮、转轴、机械动力，打造自动化工厂与酷炫机械结构。</p>
+                <div>
+                    <span class="mod-tag">科技</span>
+                    <span class="mod-tag">机械</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模组卡片 5 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod5/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">Iron Chests</h3>
+                <p class="mod-desc">升级箱子容量，提供更多样式与更大存储空间。</p>
+                <div>
+                    <span class="mod-tag">存储</span>
+                    <span class="mod-tag">实用</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模组卡片 6 -->
+        <div class="mod-card" data-aos="fade-up">
+            <img src="https://picsum.photos/seed/mod6/600/400" class="mod-img">
+            <div class="mod-body">
+                <h3 class="mod-title">Biomes O' Plenty</h3>
+                <p class="mod-desc">新增上百种生物群系，让世界更加丰富多样。</p>
+                <div>
+                    <span class="mod-tag">世界</span>
+                    <span class="mod-tag">群系</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 回到顶部 -->
+<div id="back-to-top" class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">服务器信息</h3>
+                <p class="text-gray-400 text-sm">即将开放：2026年7月1日</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">快速链接</h3>
+                <ul class="space-y-1 text-sm">
+                    <li><a href="index.html" class="text-gray-400 hover:text-primary">主页</a></li>
+                    <li><a href="about.html" class="text-gray-400 hover:text-primary">关于我们</a></li>
+                    <li><a href="mods.html" class="text-primary">模组列表</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-8 pt-4 text-center text-gray-500 text-xs">
+            &copy; 666所有权都来了
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    AOS.init({ duration:600, once:true });
+
+    // 导航
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', ()=>{
+        if(window.scrollY>20) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+    });
+
+    // 菜单
+    const menuToggle = document.getElementById('menu-toggle');
+    const closeMenu = document.getElementById('close-menu');
+    const menu = document.getElementById('navbar-menu');
+    const overlay = document.getElementById('overlay');
+
+    menuToggle.onclick = ()=>{
+        menu.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+    closeMenu.onclick = ()=>{
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+    overlay.onclick = ()=>{
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    // 回到顶部
+    const backTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', ()=>{
+        if(window.scrollY>300) backTop.classList.add('visible');
+        else backTop.classList.remove('visible');
+    });
+    backTop.onclick = ()=>{
+        window.scrollTo({top:0, behavior:'smooth'});
+    };
+});
+</script>
+
+</body>
+</html>

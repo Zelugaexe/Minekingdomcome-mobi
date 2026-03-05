@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MineKingdom - 立即加入</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#52A552',
+                        secondary: '#FF6B00',
+                        dark: '#1A1A1A',
+                        light: '#F5F5F5',
+                        accent: '#FFD700'
+                    },
+                    fontFamily: {
+                        minecraft: ['Minecraft', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+            .bg-glass {
+                background: rgba(255,255,255,0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+            .code-block {
+                background: #222;
+                border-radius: 8px;
+                padding: 12px 16px;
+                font-family: 'Consolas', 'Monaco', monospace;
+                font-size: 14px;
+                color: #eee;
+                border-left: 4px solid #52A552;
+            }
+        }
+    </style>
+
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('fonts/Minecraft.ttf') format('truetype');
+            font-display: swap;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Minecraft', sans-serif;
+            background-color: #121212;
+            color: #F5F5F5;
+            overflow-x: hidden;
+            background-image: url('assets/images/join-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+            z-index: -1;
+        }
+
+        /* 导航 */
+        .navbar {
+            transition: all 0.3s ease;
+            padding: 10px 15px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+        }
+        .navbar.scrolled {
+            background: rgba(26,26,26,0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 移动端菜单 */
+        .navbar-menu {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 85%; height: 100vh;
+            background: #1A1A1A;
+            z-index: 10000;
+            transition: right 0.3s ease;
+            padding: 70px 20px 20px;
+            overflow-y: auto;
+        }
+        .navbar-menu.active { right: 0; }
+        .overlay {
+            position: fixed; top:0; left:0;
+            width:100%; height:100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        /* 回到顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 25px; right: 20px;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: #52A552;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.3s;
+            z-index: 9998;
+        }
+        .back-to-top.visible { opacity:1; }
+
+        /* 加入页面核心样式 */
+        .page-container {
+            padding: 100px 15px 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .server-info-card {
+            background: rgba(26,26,26,0.9);
+            border-radius: 12px;
+            border: 1px solid #333;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .step-card {
+            background: rgba(26,26,26,0.9);
+            border-radius: 12px;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #52A552;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .faq-item {
+            background: rgba(26,26,26,0.9);
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            border-top: 1px solid #333;
+        }
+        .faq-answer.active {
+            padding: 15px 20px;
+            max-height: 500px;
+        }
+
+        /* 按钮样式 */
+        .btn-copy {
+            background: #52A552;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .btn-copy:hover {
+            background: #438c43;
+        }
+        .btn-primary {
+            display: block;
+            width: 100%;
+            padding: 12px 0;
+            background: #52A552;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+        .btn-primary:hover {
+            background: #438c43;
+        }
+
+        @media (max-width: 768px) {
+            .step-card {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .server-info-card {
+                padding: 20px 15px;
+            }
+        }
+
+        footer {
+            background: #111;
+            padding: 40px 15px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- 导航 -->
+<nav class="navbar">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="index.html" class="flex items-center">
+            <img src="assets/images/server-icon.png" class="h-8 w-8 mr-2">
+            <span class="text-white font-bold text-shadow">MINEKINGDOM</span>
+        </a>
+
+        <div class="hidden md:flex space-x-6">
+            <a href="index.html" class="text-white hover:text-primary">主页</a>
+            <a href="about.html" class="text-white hover:text-primary">关于我们</a>
+            <a href="news.html" class="text-white hover:text-primary">新闻</a>
+            <a href="events.html" class="text-white hover:text-primary">活动</a>
+            <a href="donate.html" class="text-white hover:text-primary">赞助</a>
+            <a href="feedback.html" class="text-white hover:text-primary">反馈</a>
+            <a href="mods.html" class="text-white hover:text-primary">模组</a>
+            <a href="admins.html" class="text-white hover:text-primary">管理员</a>
+            <a href="join.html" class="text-primary font-bold">立即加入</a>
+        </div>
+
+        <div class="md:hidden">
+            <button id="menu-toggle" class="text-white">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="navbar-menu" class="navbar-menu md:hidden">
+        <div class="flex justify-end mb-6">
+            <button id="close-menu" class="text-white">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+            <a href="index.html" class="text-white py-2 border-b border-gray-700">主页</a>
+            <a href="about.html" class="text-white py-2 border-b border-gray-700">关于我们</a>
+            <a href="news.html" class="text-white py-2 border-b border-gray-700">新闻</a>
+            <a href="events.html" class="text-white py-2 border-b border-gray-700">活动</a>
+            <a href="donate.html" class="text-white py-2 border-b border-gray-700">赞助</a>
+            <a href="feedback.html" class="text-white py-2 border-b border-gray-700">反馈</a>
+            <a href="mods.html" class="text-white py-2 border-b border-gray-700">模组</a>
+            <a href="admins.html" class="text-white py-2 border-b border-gray-700">管理员</a>
+            <a href="join.html" class="text-primary py-2 border-b border-gray-700">立即加入</a>
+        </div>
+    </div>
+    <div id="overlay" class="overlay"></div>
+</nav>
+
+<!-- 核心内容 -->
+<div class="page-container">
+    <!-- 页面标题 -->
+    <h1 class="text-3xl font-bold text-center mb-3 text-shadow" data-aos="fade-up">加入 MineKingdom</h1>
+    <p class="text-gray-300 text-center mb-10 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+        按照以下步骤，快速加入我们的服务器，开启你的奇幻冒险之旅！
+    </p>
+
+    <!-- 服务器信息卡片 -->
+    <div class="server-info-card" data-aos="fade-up">
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fa fa-server text-primary mr-2"></i>服务器信息
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-gray-300 mb-2">服务器地址</p>
+                <div class="flex gap-2 items-center">
+                    <div class="code-block flex-1">mc.minekingdom.com</div>
+                    <button class="btn-copy" onclick="copyToClipboard('mc.minekingdom.com')">
+                        <i class="fa fa-copy mr-1"></i>复制
+                    </button>
+                </div>
+            </div>
+            <div>
+                <p class="text-gray-300 mb-2">服务器版本</p>
+                <div class="code-block">网易我的世界：苍原觉醒</div>
+            </div>
+            <div>
+                <p class="text-gray-300 mb-2">QQ交流群</p>
+                <div class="flex gap-2 items-center">
+                    <div class="code-block flex-1">1234567890</div>
+                    <button class="btn-copy" onclick="copyToClipboard('1234567890')">
+                        <i class="fa fa-copy mr-1"></i>复制
+                    </button>
+                </div>
+            </div>
+            <div>
+                <p class="text-gray-300 mb-2">开服时间</p>
+                <div class="code-block">2026年7月1日 正式开服</div>
+            </div>
+        </div>
+        <div class="mt-4 p-3 bg-yellow-900/30 border border-yellow-800/50 rounded-lg text-yellow-300 text-sm">
+            <i class="fa fa-exclamation-triangle mr-2"></i>
+            提示：服务器暂未开服，当前为预约阶段，开服前我们会在QQ群通知大家！
+        </div>
+    </div>
+
+    <!-- 加入步骤 -->
+    <h2 class="text-2xl font-bold mb-6 text-center" data-aos="fade-up">加入步骤</h2>
+    
+    <div class="steps-container">
+        <!-- 步骤1 -->
+        <div class="step-card" data-aos="fade-up">
+            <div class="step-number">1</div>
+            <div>
+                <h3 class="text-lg font-bold mb-2">下载游戏客户端</h3>
+                <p class="text-gray-300 mb-3">
+                    我们提供整合包下载，已包含所有必需模组，无需手动安装。
+                </p>
+                <ul class="text-gray-400 text-sm space-y-1 list-disc pl-5 mb-3">
+                    <li>支持版本：网易我的世界：苍原觉醒</li>
+                    <li>整合包大小：不知道，请确保有足够存储空间</li>
+                    <li>兼容系统：Android|网易发烧游戏</li>
+                </ul>
+                <a href="#" class="text-primary hover:underline">
+                    <i class="fa fa-download mr-1"></i>下载整合包（自己买去）
+                </a>
+            </div>
+        </div>
+
+        <!-- 步骤2 -->
+        <div class="step-card" data-aos="fade-up">
+            <div class="step-number">2</div>
+            <div>
+                <h3 class="text-lg font-bold mb-2">安装客户端</h3>
+                <p class="text-gray-300 mb-3">
+                    官网：mc.163.com。
+                </p>
+                <ul class="text-gray-400 text-sm space-y-1 list-disc pl-5">
+                    <li>下载路径建议：会用电脑的都知道吧</li>
+                    <li>首次启动会自动安装模组，请耐心等待</li>
+                    <li>启动器需要稳定的网络连接</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 步骤3 -->
+        <div class="step-card" data-aos="fade-up">
+            <div class="step-number">3</div>
+            <div>
+                <h3 class="text-lg font-bold mb-2">添加服务器</h3>
+                <p class="text-gray-300 mb-3">
+                    启动游戏后，按照以下步骤添加服务器：
+                </p>
+                <ol class="text-gray-400 text-sm space-y-2 list-decimal pl-5">
+                    <li>点击主界面的「开始游戏」</li>
+                    <li>点击「我的山头」按钮</li>
+                    <li>服务器名称：MineKingdom 我的天国</li>
+                    <li>服务器地址：等几个月</li>
+                    <li>点击「完成」，然后进入</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 步骤4 -->
+        <div class="step-card" data-aos="fade-up">
+            <div class="step-number">4</div>
+            <div>
+                <h3 class="text-lg font-bold mb-2">首次进入设置</h3>
+                <p class="text-gray-300 mb-3">
+                    首次进入服务器需要完成以下设置：
+                </p>
+                <ul class="text-gray-400 text-sm space-y-1 list-disc pl-5">
+                    <li>从初始之地找到去新手村的路</li>
+                    <li>从商店购买并阅读服务器规则</li>
+                    <li>自行探索</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 常见问题 -->
+    <h2 class="text-2xl font-bold mb-6 mt-10 text-center" data-aos="fade-up">常见问题</h2>
+    <div class="faq-container" data-aos="fade-up">
+        <!-- FAQ 1 -->
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>需要购买正版Minecraft吗？</span>
+                <i class="fa fa-chevron-down text-primary transition-transform"></i>
+            </div>
+            <div class="faq-answer">
+                <p>游戏免费的，自己下一个见见世面吧。</p>
+            </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>服务器需要付费才能玩吗？</span>
+                <i class="fa fa-chevron-down text-primary transition-transform"></i>
+            </div>
+            <div class="faq-answer">
+                <p>完全免费，我们提供免费的游戏体验，同时也有自愿赞助选项，赞助可以获得一些物品（如银行卡、货币等），不会影响游戏平衡性。</p>
+            </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>设备配置要求高吗？</span>
+                <i class="fa fa-chevron-down text-primary transition-transform"></i>
+            </div>
+            <div class="faq-answer">
+                <p>手机配置要求：<br>
+                - 1.不会闪退和爆炸<br>
+                - 2.可以流畅游玩我的世界<br>
+                - 3.有足够的存储和运存<br>
+                - 存储空间：，因为模组多，至少10GB可用空间<br>
+                推荐配置：不会闪退和爆炸的就可以。
+                </p>
+            </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>可以使用自己的客户端吗？</span>
+                <i class="fa fa-chevron-down text-primary transition-transform"></i>
+            </div>
+            <div class="faq-answer">
+                <p>网易有别的客户端吗？</p>
+            </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>遇到连接问题怎么办？</span>
+                <i class="fa fa-chevron-down text-primary transition-transform"></i>
+            </div>
+            <div class="faq-answer">
+                <p>请按照以下步骤排查：<br>
+                1. 检查网络连接是否正常<br>
+                2. 确认客户端正确<br>
+                3. 关闭大脑，直接启动<br>
+                4. 加入QQ群联系管理员获取帮助<br>
+                5. 在「反馈」页面提交问题报告
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加入QQ群按钮 -->
+    <a href="https://qm.qq.com/cgi-bin/qm/qr?k=你的QQ群链接&jump_from=webapi" class="btn-primary">
+        <i class="fa fa-qq mr-2"></i>加入QQ交流群
+    </a>
+</div>
+
+<!-- 回到顶部 -->
+<div id="back-to-top" class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">服务器信息</h3>
+                <p class="text-gray-400 text-sm">开服时间：2026年7月1日</p>
+                <p class="text-gray-400 text-sm">Coming Soon 2026.07.01</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">快速链接</h3>
+                <ul class="space-y-1 text-sm">
+                    <li><a href="index.html" class="text-gray-400 hover:text-primary">主页</a></li>
+                    <li><a href="mods.html" class="text-gray-400 hover:text-primary">模组列表</a></li>
+                    <li><a href="join.html" class="text-primary">加入服务器</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">联系我们</h3>
+                <ul class="space-y-1 text-sm">
+                    <li class="flex items-center">
+                        <i class="fa fa-envelope text-primary mr-2"></i>
+                        <a href="mailto:MineKingdomCome@163.com" class="text-gray-400 hover:text-primary">MineKingdomCome@163.com</a>
+			<a href="mailto:3994731833@qq.com" class="text-gray-400 hover:text-primary">3994731833@qq.com</a>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa fa-envelope text-primary mr-2"></i>
+ 			<a href="mailto:3994731833@qq.com" class="text-gray-400 hover:text-primary">3994731833@qq.com</a>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa fa-qq text-primary mr-2"></i>
+                        <span class="text-gray-400">1234567890</span>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white mb-3">免责声明</h3>
+                <p class="text-gray-400 text-xs">
+                    本服务器仅为娱乐用途，只有一点商业性质，所有内容均遵循网易我的世界多人游戏协议。
+                </p>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-8 pt-4 text-center text-gray-500 text-xs">
+            &copy; 666所有权都来了
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    // 初始化AOS动画
+    AOS.init({ duration:600, once:true });
+
+    // 导航栏滚动效果
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', ()=>{
+        if(window.scrollY>20) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+    });
+
+    // 移动端菜单控制
+    const menuToggle = document.getElementById('menu-toggle');
+    const closeMenu = document.getElementById('close-menu');
+    const menu = document.getElementById('navbar-menu');
+    const overlay = document.getElementById('overlay');
+
+    menuToggle.onclick = ()=>{
+        menu.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+    closeMenu.onclick = ()=>{
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+    overlay.onclick = ()=>{
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    // 回到顶部按钮
+    const backTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', ()=>{
+        if(window.scrollY>300) backTop.classList.add('visible');
+        else backTop.classList.remove('visible');
+    });
+    backTop.onclick = ()=>{
+        window.scrollTo({top:0, behavior:'smooth'});
+    };
+
+    // 复制功能
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            // 显示复制成功提示
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-check mr-1"></i>已复制';
+            btn.style.background = '#2e7d32';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '#52A552';
+            }, 2000);
+        }).catch(err => {
+            alert('复制失败，请手动复制：' + text);
+        });
+    }
+    window.copyToClipboard = copyToClipboard;
+
+    // FAQ 折叠/展开
+    function toggleFaq(el) {
+        const answer = el.nextElementSibling;
+        const icon = el.querySelector('i');
+        
+        answer.classList.toggle('active');
+        icon.classList.toggle('rotate-180');
+        
+        // 关闭其他FAQ
+        document.querySelectorAll('.faq-answer').forEach(item => {
+            if (item !== answer && item.classList.contains('active')) {
+                item.classList.remove('active');
+                item.previousElementSibling.querySelector('i').classList.remove('rotate-180');
+            }
+        });
+    }
+    window.toggleFaq = toggleFaq;
+});
+</script>
+
+</body>
+</html>

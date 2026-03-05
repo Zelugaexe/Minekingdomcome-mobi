@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MineKingdom 我的天国</title>
+    <!-- 本地化资源引用 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#52A552',
+                        secondary: '#FF6B00',
+                        dark: '#1A1A1A',
+                        light: '#F5F5F5',
+                        accent: '#FFD700'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        minecraft: ['Minecraft', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            .text-shadow-lg {
+                text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+            }
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            .hover-scale {
+                transition: transform 0.3s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.03); /* 移动端缩小缩放效果 */
+            }
+            .animate-fade-in {
+                animation: fadeIn 1s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.8s ease-out;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(30px); opacity: 0; } /* 移动端减少位移 */
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .animate-pulse-border {
+                animation: pulseBorder 2s infinite;
+            }
+            @keyframes pulseBorder {
+                0% { box-shadow: 0 0 0 0 rgba(82, 165, 82, 0.7); }
+                70% { box-shadow: 0 0 0 8px rgba(82, 165, 82, 0); } /* 移动端缩小阴影范围 */
+                100% { box-shadow: 0 0 0 0 rgba(82, 165, 82, 0); }
+            }
+        }
+    </style>
+
+    <style>
+        /* 引入Minecraft中文字体 - 本地字体文件 */
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('fonts/Minecraft.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter';
+            src: url('fonts/Inter-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            font-family: 'Minecraft', 'Inter', sans-serif;
+            -webkit-text-size-adjust: 100%; /* 防止iOS文字缩放 */
+        }
+        
+        body {
+            font-family: 'Minecraft', 'Inter', sans-serif;
+            background-color: #121212;
+            color: #F5F5F5;
+            overflow-x: hidden; /* 防止横向滚动 */
+        }
+        
+        /* 移动端优化的英雄区域背景 */
+        .hero-section {
+            background-image: url('assets/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-height: 100vh;
+            padding: 80px 0 40px; /* 适配移动端状态栏 */
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.9)); /* 加深遮罩提升文字可读性 */
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 15px;
+        }
+        
+        /* 移动端优化的导航栏 */
+        .navbar {
+            transition: all 0.3s ease;
+            padding: 10px 15px !important; /* 移动端减小内边距 */
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+        }
+        
+        .navbar.scrolled {
+            background-color: rgba(26, 26, 26, 0.98);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 移动端菜单优化 */
+        .navbar-menu {
+            position: fixed !important;
+            top: 0 !important;
+            right: -100% !important;
+            width: 85% !important; /* 增大菜单宽度 */
+            height: 100vh !important;
+            background-color: #1A1A1A !important;
+            z-index: 10000 !important;
+            transition: right 0.3s ease !important;
+            padding: 70px 20px 20px !important; /* 适配状态栏 */
+            overflow-y: auto !important;
+        }
+        
+        .navbar-menu.active {
+            right: 0 !important;
+        }
+        
+        .overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: rgba(0, 0, 0, 0.7) !important; /* 加深遮罩 */
+            z-index: 9999 !important;
+            display: none !important;
+        }
+        
+        .overlay.active {
+            display: block !important;
+        }
+        
+        /* 按钮移动端优化 */
+        .btn-primary, .btn-secondary {
+            display: block !important;
+            width: 100% !important;
+            text-align: center !important;
+            padding: 12px 0 !important; /* 增大点击区域 */
+            margin-bottom: 10px;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            text-decoration: none;
+            background-color: #52A552;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #FF6B00;
+        }
+        
+        /* 返回顶部按钮移动端优化 */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 45px !important;
+            height: 45px !important;
+            border-radius: 50%;
+            background-color: #52A552;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+        }
+        
+        /* 适配iOS底部安全区 */
+        footer {
+            padding: 30px 15px 50px !important;
+        }
+        
+        /* 优化滚动体验 */
+        * {
+            -webkit-tap-highlight-color: transparent; /* 移除点击高亮 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar fixed w-full z-50 py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="assets/images/server-icon.png" alt="logo" class="h-8 w-8 mr-2"> <!-- 缩小logo -->
+                <span class="text-lg font-bold text-white text-shadow">MINEKINGDOM</span> <!-- 简化标题 -->
+            </a>
+            
+            <!-- 桌面导航 - 移动端隐藏 -->
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">主页 <span class="text-sm text-gray-400">(Home)</span></a>
+                <a href="about.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">关于我们 <span class="text-sm text-gray-400">(About)</span></a>
+                <a href="news.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">新闻 <span class="text-sm text-gray-400">(News)</span></a>
+                <a href="events.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">活动 <span class="text-sm text-gray-400">(Events)</span></a>
+                <a href="donate.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">赞助 <span class="text-sm text-gray-400">(Donate)</span></a>
+                <a href="feedback.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">反馈 <span class="text-sm text-gray-400">(Feedback)</span></a>
+                <a href="mods.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">我们使用的模组 <span class="text-sm text-gray-400">(Mods)</span></a>
+                <a href="admins.html" class="text-white hover:text-primary transition-colors duration-300 font-medium">管理员 <span class="text-sm text-gray-400">(Admins)</span></a>
+            </div>
+            
+            <!-- 移动端菜单按钮 -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-white focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i> <!-- 缩小图标 -->
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 - 优化触控体验 -->
+        <div id="navbar-menu" class="navbar-menu md:hidden">
+            <div class="flex justify-end mb-6">
+                <button id="close-menu" class="text-white focus:outline-none">
+                    <i class="fa fa-times text-xl"></i> <!-- 缩小图标 -->
+                </button>
+            </div>
+            <div class="flex flex-col space-y-5"> <!-- 减小间距 -->
+                <a href="index.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">主页 <span class="text-xs text-gray-400">(Home)</span></a>
+                <a href="about.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">关于我们 <span class="text-xs text-gray-400">(About)</span></a>
+                <a href="news.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">新闻 <span class="text-xs text-gray-400">(News)</span></a>
+                <a href="events.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">活动 <span class="text-xs text-gray-400">(Events)</span></a>
+                <a href="donate.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">赞助 <span class="text-xs text-gray-400">(Donate)</span></a>
+                <a href="feedback.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">反馈 <span class="text-xs text-gray-400">(Feedback)</span></a>
+                <a href="mods.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">我们使用的模组 <span class="text-xs text-gray-400">(Mods)</span></a>
+                <a href="admins.html" class="text-white hover:text-primary transition-colors duration-300 font-medium text-base py-2 border-b border-gray-700">管理员 <span class="text-xs text-gray-400">(Admins)</span></a>
+            </div>
+        </div>
+        <div id="overlay" class="overlay"></div>
+    </nav>
+
+    <!-- 英雄区域 - 移动端优化 -->
+    <section id="home" class="hero-section min-h-screen flex items-center justify-center">
+        <div class="hero-content container mx-auto px-4 text-center" data-aos="fade-up" data-aos-duration="1000">
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4 text-shadow-lg animate-fade-in">MineKingdom-我的天国</h1>
+            <p class="text-base md:text-lg text-gray-200 mb-8 max-w-full mx-auto text-shadow animate-slide-up">加入MineKingdom，来到魔法与奇幻交织的神奇国度！</p>
+            <div class="flex flex-col justify-center gap-3 animate-slide-up" style="animation-delay: 0.3s;">
+                <a href="about.html" class="btn-primary">了解更多</a>
+                <a href="join.html" class="btn-secondary">立即加入</a>
+            </div>
+            
+            <!-- 服务器状态 - 移动端优化 -->
+            <div class="mt-12 bg-glass rounded-lg p-4 max-w-full mx-auto animate-fade-in" style="animation-delay: 0.6s;">
+                <div class="flex flex-col justify-between items-center">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-white mb-2">服务器状态</h3>
+                        <div class="flex items-center">
+                            <span class="inline-block w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                            <span class="text-green-400 font-medium">在线</span>
+                        </div>
+                    </div>
+                    <div class="text-center w-full">
+                        <h3 class="text-lg font-semibold text-white mb-2">运行时间</h3>
+                        <div id="uptime" class="countdown-timer text-base font-mono text-white">00天 00小时 00分钟 00秒</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 - 移动端优化 -->
+    <footer class="bg-gray-900 py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"> <!-- 移动端双列 -->
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-3">服务器加入链接</h3>
+                    <p class="text-gray-400 text-sm">即将到来     2026年7月1日</p>
+                    <p class="text-gray-400 text-sm">Coming Soon  2026.7.1</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-3">快速链接</h3>
+                    <ul class="space-y-1">
+                        <li><a href="index.html" class="text-gray-400 hover:text-primary transition-colors text-sm">主页</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-primary transition-colors text-sm">关于我们</a></li>
+                        <li><a href="news.html" class="text-gray-400 hover:text-primary transition-colors text-sm">新闻</a></li>
+                        <li><a href="events.html" class="text-gray-400 hover:text-primary transition-colors text-sm">活动</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-3">社区</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Discord</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">QQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Microsoft Teams</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Skype</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-3">联系我们</h3>
+                    <ul class="space-y-1">
+                        <li class="flex items-center"><i class="fa fa-envelope text-primary mr-2 text-sm"></i> <a href="mailto:MineKingdomCome@163.com" class="text-gray-400 hover:text-primary transition-colors text-sm">MineKingdomCome@163.com</a></li>
+                        <li class="flex items-center"><i class="fa fa-envelope text-primary mr-2 text-sm"></i> <a href="mailto:3994731833@qq.com" class="text-gray-400 hover:text-primary transition-colors text-sm">3994731833@qq.com</a></li>
+                        <li class="flex items-center"><i class="fa fa-phone text-primary mr-2 text-sm"></i> <span class="text-gray-400 text-sm">QQ群：1234567890</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6 text-center">
+                <p class="text-gray-500 text-xs">&copy; 666保留所有权都来了.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 - 移动端优化 -->
+    <div id="back-to-top" class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+    </div>
+
+    <script>
+        // 初始化AOS动画库
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 600, // 缩短动画时长
+                easing: 'ease-in-out',
+                once: true,
+                disable: window.innerWidth < 768 // 移动端禁用AOS动画提升性能
+            });
+            
+            // 导航栏滚动效果
+            const navbar = document.querySelector('.navbar');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 20) { // 减小触发距离
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            // 移动端菜单 - 优化触控
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeMenu = document.getElementById('close-menu');
+            const navbarMenu = document.getElementById('navbar-menu');
+            const overlay = document.getElementById('overlay');
+            
+            menuToggle.addEventListener('click', function() {
+                navbarMenu.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed'; // 防止背景滚动
+            });
+            
+            closeMenu.addEventListener('click', function() {
+                navbarMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                document.body.style.position = 'static';
+            });
+            
+            overlay.addEventListener('click', function() {
+                navbarMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                document.body.style.position = 'static';
+            });
+            
+            // 移动端菜单项点击关闭菜单
+            const mobileMenuItems = navbarMenu.querySelectorAll('a');
+            mobileMenuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    navbarMenu.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    document.body.style.position = 'static';
+                });
+            });
+            
+            // 回到顶部按钮 - 优化移动端体验
+            const backToTop = document.getElementById('back-to-top');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 200) { // 减小触发距离
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            });
+            
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 服务器运行时间计时器
+            updateUptime();
+            setInterval(updateUptime, 1000);
+            
+            // 移动端点击效果
+            document.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') {
+                    const effect = document.createElement('div');
+                    effect.classList.add('click-effect');
+                    effect.style.left = e.clientX + 'px';
+                    effect.style.top = e.clientY + 'px';
+                    document.body.appendChild(effect);
+                    
+                    setTimeout(() => {
+                        effect.remove();
+                    }, 600);
+                }
+            });
+        });
+        
+        // 服务器运行时间计时器
+        function updateUptime() {
+            // 模拟服务器启动时间（实际应用中应从服务器获取）
+            const startTime = new Date('2026-01-01T00:00:00').getTime();
+            const now = new Date().getTime();
+            const diff = now - startTime;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('uptime').textContent = 
+                `${days.toString().padStart(2, '0')}天 ${hours.toString().padStart(2, '0')}小时 ${minutes.toString().padStart(2, '0')}分钟 ${seconds.toString().padStart(2, '0')}秒`;
+        }
+        
+        // 移动端性能优化
+        window.addEventListener('load', function() {
+            // 预加载图片
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                if (img.src) {
+                    const preload = new Image();
+                    preload.src = img.src;
+                }
+            });
+            
+            // 平滑滚动优化
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70, // 偏移导航栏高度
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
